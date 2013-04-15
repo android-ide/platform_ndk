@@ -355,21 +355,37 @@ register_var_option ()
 
 MINGW=no
 DARWIN=no
+LINK_STATIC=no
+TARGET_ANDROID_ARM=no
 do_mingw_option ()
 {
-    if [ "$DARWIN" = "yes" ]; then
-        echo "Can not have both --mingw and --darwin"
+    if [ "$DARWIN" = "yes" -o "$TARGET_ANDROID_ARM" = "yes" ]; then
+        echo "Can not have multiple cross-compile build options"
         exit 1
     fi
     MINGW=yes;
 }
 do_darwin_option ()
 {
-    if [ "$MINGW" = "yes" ]; then
-        echo "Can not have both --mingw and --darwin"
+    if [ "$MINGW" = "yes" -o "$TARGET_ANDROID_ARM" = "yes" ]; then
+        echo "Can not have multiple cross-compile build options"
         exit 1
     fi
     DARWIN=yes; 
+}
+
+do_targetandroidarm_option ()
+{
+    if [ "$DARWIN" = "yes" -o "$MINGW" = "yes" ]; then
+        echo "Can not have multiple cross-compile build options"
+        exit 1
+    fi
+    TARGET_ANDROID_ARM=yes; 
+}
+
+do_linkstatic_option ()
+{
+    LINK_STATIC=yes; 
 }
 
 register_canadian_option ()
@@ -377,6 +393,8 @@ register_canadian_option ()
     if [ "$HOST_OS" = "linux" ] ; then
         register_option "--mingw" do_mingw_option "Generate windows binaries on Linux."
         register_option "--darwin" do_darwin_option "Generate darwin binaries on Linux."
+        register_option "--target-android-arm" do_targetandroidarm_option "Generate ARM binaries on Linux."
+        register_option "--link-static" do_linkstatic_option "Generate static binaries on Linux."
     fi
 }
 
@@ -685,12 +703,12 @@ probe_darwin_sdk ()
 handle_canadian_build ()
 {
     HOST_EXE=
-    if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" ] ; then
+    if [ \( "$MINGW" = "yes" -o "$DARWIN" = "yes" \) -o "$TARGET_ANDROID_ARM" = "yes" ] ; then
         case $HOST_TAG in
             linux-*)
                 ;;
             *)
-                echo "ERROR: Can only enable --mingw or --darwin on Linux platforms !"
+                echo "ERROR: Can only enable --mingw or --darwin or --target-android-arm on Linux platforms !"
                 exit 1
                 ;;
         esac
@@ -706,6 +724,10 @@ handle_canadian_build ()
             fi
             HOST_OS=windows
             HOST_EXE=.exe
+        elif [ "$TARGET_ANDROID_ARM" = "yes" ] ; then
+            ABI_CONFIGURE_HOST=arm-linux-gnueabi
+            HOST_OS=linux
+            HOST_TAG=linux-arm
         else
             if [ "$TRY64" = "yes" ]; then
                 ABI_CONFIGURE_HOST=x86_64-apple-darwin
@@ -772,7 +794,7 @@ find_mingw_toolchain ()
 #
 prepare_canadian_toolchain ()
 {
-    if [ "$MINGW" != "yes" -a "$DARWIN" != "yes" ]; then
+    if [ \( "$MINGW" != "yes" -a "$DARWIN" != "yes" \) -a "$TARGET_ANDROID_ARM" != "yes" ]; then
         return
     fi
     CROSS_GCC=
@@ -786,6 +808,10 @@ prepare_canadian_toolchain ()
             exit 1
         fi
         CROSS_GCC=$MINGW_GCC
+    elif [ "$TARGET_ANDROID_ARM" = "yes" ]; then
+        BINPREFIX=arm-linux-gnueabi-
+        find_program ARMEABI_GCC $BINPREFIX"gcc"
+	CROSS_GCC=$ARMEABI_GCC
     else
         if [ -z "$DARWIN_TOOLCHAIN" ]; then
             echo "Please set DARWIN_TOOLCHAIN to darwin cross-toolchain"
@@ -836,6 +862,14 @@ EOF
     fi
     $NDK_BUILDTOOLS_PATH/gen-toolchain-wrapper.sh --src-prefix=$BINPREFIX --dst-prefix="$DST_PREFIX" "$CROSS_WRAP_DIR" \
         --cflags="$HOST_CFLAGS" --cxxflags="$HOST_CFLAGS" --ldflags="$HOST_LDFLAGS"
+
+    # some parts of gcc build require arm-unknown-linux-gnueabi-gcc, ...
+    # instead of arm-linux-gnueabi-gcc, ...
+    if [ "$TARGET_ANDROID_ARM" = "yes" ] ; then
+        $NDK_BUILDTOOLS_PATH/gen-toolchain-wrapper.sh --src-prefix=arm-unknown-linux-gnueabi- --dst-prefix="$DST_PREFIX" "$CROSS_WRAP_DIR" \
+        --cflags="$HOST_CFLAGS" --cxxflags="$HOST_CFLAGS" --ldflags="$HOST_LDFLAGS"
+    fi
+
     # generate wrappers for BUILD toolchain
     # this is required for mingw/darwin build to avoid tools canadian cross configuration issues
     # 32-bit BUILD toolchain
@@ -891,7 +925,12 @@ setup_ccache ()
 
 prepare_common_build ()
 {
-    if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" ]; then
+    if [ "$LINK_STATIC" = "yes" ]; then
+        HOST_CFLAGS=$HOST_CFLAGS" --static"
+        HOST_LDFLAGS=$HOST_LDFLAGS" --static"
+    fi
+
+    if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" -o "$TARGET_ANDROID_ARM" = "yes" ]; then
         if [ "$TRY64" = "yes" ]; then
             HOST_BITS=64
         else
@@ -899,6 +938,8 @@ prepare_common_build ()
         fi
         if [ "$MINGW" = "yes" ]; then
             log "Generating $HOST_BITS-bit Windows binaries"
+        elif [ "$TARGET_ANDROID_ARM" = "yes" ]; then
+            log "Generating 32-bit ARM binaries"
         else
             log "Generating $HOST_BITS-bit Darwin binaries"
         fi
@@ -988,7 +1029,7 @@ prepare_host_build ()
     prepare_common_build
 
     # Now deal with mingw or darwin
-    if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" ]; then
+    if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" -o "$TARGET_ANDROID_ARM" = "yes" ]; then
         handle_canadian_build
         CC=$ABI_CONFIGURE_HOST-gcc
         CXX=$ABI_CONFIGURE_HOST-g++
@@ -1041,7 +1082,7 @@ prepare_target_build ()
     HOST_GMP_ABI=$HOST_BITS
 
     # Now handle the --mingw/--darwin flag
-    if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" ] ; then
+    if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" -o "$TARGET_ANDROID_ARM" = "yes" ] ; then
         handle_canadian_build
         STRIP=$ABI_CONFIGURE_HOST-strip
         if [ "$MINGW" = "yes" ] ; then
@@ -1203,6 +1244,9 @@ get_prebuilt_host_tag ()
     fi
     if [ "$DARWIN" = "yes" ]; then
         RET=darwin-x86_64  # let the following handles 32-bit case
+    fi
+    if [ "$TARGET_ANDROID_ARM" = "yes" ]; then
+        RET=linux-arm
     fi
     case $RET in
         linux-x86_64)

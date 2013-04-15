@@ -1,0 +1,72 @@
+diff -Nur a/Makefile.in b/Makefile.in
+--- a/Makefile.in	2013-04-18 14:49:52.386923828 +0200
++++ b/Makefile.in	2013-04-18 16:32:11.386787540 +0200
+@@ -304,10 +304,17 @@
+ 	--disable-ppl-version-check --disable-cloog-version-check --disable-isl-version-check $(CLOOG_BACKEND)
+ # links to the static C++ runtime to avoid depending on the host version
+ ifneq ($(host_os),darwin)
++ifneq ($(BUILD_ONLY_STATIC_EXECUTABLES),)
++BINUTILS_CONFIG_ARGS+= \
++	'--with-host-libstdcxx=-static-libgcc \
++	 -Wl,-Bstatic,-lstdc++,-lm' \
++	 --with-gold-ldflags='-static-libgcc -static-libstdc++'
++else
+ BINUTILS_CONFIG_ARGS+= \
+ 	'--with-host-libstdcxx=-static-libgcc \
+ 	 -Wl,-Bstatic,-lstdc++,-Bdynamic -lm' \
+ 	 --with-gold-ldflags='-static-libgcc -static-libstdc++'
++endif
+ else
+ # In darwin ld doesn't allow both -static and -dynamic.  Instead, we rely on explicit
+ # "-isysroot $(mac_sdk_root) -mmacosx-version-min=$(mac_sdk_version)" to establish
+@@ -330,10 +337,16 @@
+ endif
+ endif
+ endif
++ifneq ($(BUILD_ONLY_STATIC_EXECUTABLES),)
++LIBTOOL_LDFLAGS="-all-static"
++else
++LIBTOOL_LDFLAGS=
++endif
+ stmp-config-target-binutils: config.status stmp-install-host-ppl stmp-install-host-isl $(canadian_stmp)
+ 	([ -d ${BINUTILS_VERSION} ] || \
+ 	  mkdir ${BINUTILS_VERSION}) && \
+ 	($(canadian_env) \
++ 	 export LIBTOOL_LDFLAGS="$(LIBTOOL_LDFLAGS)" ; \
+ 	 cd ${BINUTILS_VERSION} ; \
+ 	 $(call find-package-srcdir, ${BINUTILS_VERSION})/configure \
+ 	  $(BINUTILS_CONFIG_ARGS)) && \
+@@ -393,11 +406,16 @@
+ 	--target=${target_alias} --host=${host} --build=${build} \
+ 	$(host_baseargs) --disable-shared \
+ 	--enable-install-libbfd --with-included-gettext
++ifeq ($(cur_host),arm-linux-gnueabi)
++LIBBFD_CFLAGS="$(CFLAGS)"
++else
++LIBBFD_CFLAGS="$(CFLAGS) -m32"
++endif
+ stmp-config-host-libbfd: config.status
+ 	([ -d libbfd-${BINUTILS_VERSION} ] || \
+ 	  mkdir libbfd-${BINUTILS_VERSION}) && \
+ 	(cd libbfd-${BINUTILS_VERSION} ; \
+-	 export CFLAGS="$(CFLAGS) -m32" ; \
++	 export CFLAGS="$(LIBBFD_CFLAGS)" ; \
+ 	 $(call find-package-srcdir, ${BINUTILS_VERSION})/configure \
+ 	  $(LIBBFD_CONFIG_ARGS)) && \
+ 	$(STAMP) $@
+@@ -447,9 +465,15 @@
+ 	--disable-ppl-version-check --disable-cloog-version-check --disable-isl-version-check $(CLOOG_BACKEND)
+ # links to the static C++ runtime to avoid depending on the host version
+ ifneq ($(host_os),darwin)
++ifneq ($(BUILD_ONLY_STATIC_EXECUTABLES),)
++GCC_CONFIG_ARGS += \
++	'--with-host-libstdcxx=-static-libgcc \
++	 -Wl,-Bstatic,-lstdc++,-lm'
++else
+ GCC_CONFIG_ARGS += \
+ 	'--with-host-libstdcxx=-static-libgcc \
+ 	 -Wl,-Bstatic,-lstdc++,-Bdynamic -lm'
++endif
+ else
+ # In darwin ld doesn't allow both -static and -dynamic.  Instead, we rely on explicit
+ # "-isysroot $(mac_sdk_root) -mmacosx-version-min=$(mac_sdk_version)" to establish

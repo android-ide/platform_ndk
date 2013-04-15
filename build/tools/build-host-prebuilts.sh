@@ -220,6 +220,14 @@ for SYSTEM in $SYSTEMS; do
                 TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --darwin"
                 CANADIAN_BUILD=yes
                 ;;
+            androidarmstatic)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --target-android-arm --link-static"
+                CANADIAN_BUILD=yes
+                ;;
+            androidx86static)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --link-static"
+                CANADIAN_BUILD=yes
+                ;;
         esac
     fi
 
@@ -310,6 +318,10 @@ for SYSTEM in $SYSTEMS; do
             TOOLCHAIN_NAMES=$(get_toolchain_name_list_for_arch $ARCH $VERSIONS)
         else
             TOOLCHAIN_NAMES=$(get_toolchain_name_list_for_arch $ARCH)
+        fi
+        if [ "$SYSTEM" = "androidarmstatic" -o "$SYSTEM" = "androidx86static" ]; then
+            # Only GCC 4.6 is supported for armstatic architecture for now
+            TOOLCHAIN_NAMES=$(get_toolchain_name_for_arch $ARCH "4.6")
         fi
         if [ -z "$TOOLCHAIN_NAMES" ]; then
             echo "ERROR: Toolchains: "$(spaces_to_commas $GCC_VERSION_LIST)" are not available for arch: $ARCH"

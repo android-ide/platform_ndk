@@ -1,0 +1,60 @@
+diff -Nur a/binutils-2.21/bfd/Makefile.in b/binutils-2.21/bfd/Makefile.in
+--- a/binutils-2.21/bfd/Makefile.in	2013-04-18 14:49:55.770923753 +0200
++++ b/binutils-2.21/bfd/Makefile.in	2013-04-17 20:47:02.088760354 +0200
+@@ -126,7 +126,7 @@
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
++	--mode=link $(CCLD) $(LIBTOOL_LDFLAGS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+ 	$(LDFLAGS) -o $@
+ SOURCES = $(libbfd_a_SOURCES) $(libbfd_la_SOURCES) \
+ 	$(EXTRA_libbfd_la_SOURCES)
+diff -Nur a/binutils-2.21/binutils/Makefile.in b/binutils-2.21/binutils/Makefile.in
+--- a/binutils-2.21/binutils/Makefile.in	2013-04-18 14:49:55.958923749 +0200
++++ b/binutils-2.21/binutils/Makefile.in	2013-04-17 19:52:34.856832873 +0200
+@@ -183,7 +183,7 @@
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
++	--mode=link $(CCLD) $(LIBTOOL_LDFLAGS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+ 	$(LDFLAGS) -o $@
+ @MAINTAINER_MODE_FALSE@am__skiplex = test -f $@ ||
+ LEXCOMPILE = $(LEX) $(LFLAGS) $(AM_LFLAGS)
+diff -Nur a/binutils-2.21/gas/Makefile.in b/binutils-2.21/gas/Makefile.in
+--- a/binutils-2.21/gas/Makefile.in	2013-04-18 14:49:57.786923708 +0200
++++ b/binutils-2.21/gas/Makefile.in	2013-04-17 20:46:35.724760937 +0200
+@@ -102,7 +102,7 @@
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
++	--mode=link $(CCLD) $(LIBTOOL_LDFLAGS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+ 	$(LDFLAGS) -o $@
+ @MAINTAINER_MODE_FALSE@am__skiplex = test -f $@ ||
+ LEXCOMPILE = $(LEX) $(LFLAGS) $(AM_LFLAGS)
+diff -Nur a/binutils-2.21/gprof/Makefile.in b/binutils-2.21/gprof/Makefile.in
+--- a/binutils-2.21/gprof/Makefile.in	2013-04-18 14:50:00.170923655 +0200
++++ b/binutils-2.21/gprof/Makefile.in	2013-04-17 20:46:18.176761328 +0200
+@@ -90,7 +90,7 @@
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
++	--mode=link $(CCLD) $(LIBTOOL_LDFLAGS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+ 	$(LDFLAGS) -o $@
+ SOURCES = $(gprof_SOURCES)
+ INFO_DEPS = gprof.info
+diff -Nur a/binutils-2.21/ld/Makefile.in b/binutils-2.21/ld/Makefile.in
+--- a/binutils-2.21/ld/Makefile.in	2013-04-18 14:50:00.262923654 +0200
++++ b/binutils-2.21/ld/Makefile.in	2013-04-17 20:45:40.712762157 +0200
+@@ -104,7 +104,7 @@
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
++	--mode=link $(CCLD)  $(LIBTOOL_LDFLAGS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+ 	$(LDFLAGS) -o $@
+ @MAINTAINER_MODE_FALSE@am__skiplex = test -f $@ ||
+ LEXCOMPILE = $(LEX) $(LFLAGS) $(AM_LFLAGS)

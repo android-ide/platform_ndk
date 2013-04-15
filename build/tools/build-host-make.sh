@@ -84,6 +84,11 @@ if [ "$DARWIN" = "yes" ]; then
     CONFIGURE_FLAGS=$CONFIGURE_FLAGS" --host=$ABI_CONFIGURE_HOST"
 fi
 
+if [ "$TARGET_ANDROID_ARM" = "yes" ]; then
+    # Required for a proper armstatic cross compile
+    CONFIGURE_FLAGS=$CONFIGURE_FLAGS" --host=$ABI_CONFIGURE_HOST"
+fi
+
 log "Configuring the build"
 mkdir -p $BUILD_DIR && rm -rf $BUILD_DIR/*
 prepare_canadian_toolchain $BUILD_DIR

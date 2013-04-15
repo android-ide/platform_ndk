@@ -270,13 +270,23 @@ export CC CXX
 export CFLAGS_FOR_TARGET="$ABI_CFLAGS_FOR_TARGET"
 export CXXFLAGS_FOR_TARGET="$ABI_CXXFLAGS_FOR_TARGET"
 # Needed to build a 32-bit gmp on 64-bit systems
-export ABI=$HOST_GMP_ABI
+
+# disable export of ABI on armstatic because arm build does not support ABI
+# values except for "standard"
+if [ "$TARGET_ANDROID_ARM" != "yes" ] ; then
+    export ABI=$HOST_GMP_ABI
+fi
 
 # Note that the following flags only apply for "build" in canadian
 # -Wno-error is needed because our gdb-6.6 sources use -Werror by default
 # and fail to build with recent GCC versions.
 CFLAGS_FOR_BUILD="-O2 -s -Wno-error"
-LDFLAGS_FOR_BUILD=
+
+if [ "$LINK_STATIC" = "yes" ] ; then
+    LDFLAGS_FOR_BUILD="-static"
+else
+    LDFLAGS_FOR_BUILD=
+fi
 
 if [ "$MINGW" = "yes" ] ; then
     CFLAGS_FOR_BUILD=$CFLAGS_FOR_BUILD" -D__USE_MINGW_ANSI_STDIO=1"
@@ -381,7 +391,7 @@ case "$TOOLCHAIN" in
 esac
 
 MAY_FAIL_DUE_TO_RACE_CONDITION=
-if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" ]; then
+if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" -o "$TARGET_ANDROID_ARM" = "yes" ]; then
    MAY_FAIL_DUE_TO_RACE_CONDITION=yes
 fi
 
@@ -442,7 +452,19 @@ ABI="$OLD_ABI"
 dump "Building : $TOOLCHAIN toolchain [this can take a long time]."
 cd $BUILD_OUT
 export CC CXX
-export ABI=$HOST_GMP_ABI
+
+# disable export of ABI on armstatic because arm build does not support ABI
+# values except for "standard"
+if [ "$TARGET_ANDROID_ARM" != "yes" ] ; then
+    export ABI=$HOST_GMP_ABI
+fi
+
+# Tell make that all executables are built statically. Necessary because
+# of some hardcoded -Bdynamic options in the Makefile.
+if [ "$LINK_STATIC" = "yes" ] ; then
+    export BUILD_ONLY_STATIC_EXECUTABLES=yes
+fi
+
 export NUM_JOBS
 
 while [ -n "1" ]; do
