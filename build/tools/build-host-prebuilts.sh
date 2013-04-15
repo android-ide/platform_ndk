@@ -220,6 +220,10 @@ for SYSTEM in $SYSTEMS; do
                 TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --darwin"
                 CANADIAN_BUILD=yes
                 ;;
+            armstatic)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --armstatic"
+                CANADIAN_BUILD=yes
+                ;;
         esac
     fi
 

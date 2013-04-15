@@ -83,11 +83,16 @@ if [ "$DARWIN" = "yes" ]; then
     CONFIGURE_FLAGS=$CONFIGURE_FLAGS" --host=$ABI_CONFIGURE_HOST"
 fi
 
+if [ "$ARMSTATIC" = "yes" ]; then
+    # Required for a proper armstatic cross compile
+    CONFIGURE_FLAGS=$CONFIGURE_FLAGS" --host=$ABI_CONFIGURE_HOST"
+fi
+
 log "Configuring the build"
 mkdir -p $BUILD_DIR && rm -rf $BUILD_DIR/*
 prepare_canadian_toolchain $BUILD_DIR
 cd $BUILD_DIR &&
-CFLAGS=$HOST_CFLAGS" -O2 -s" &&
+CFLAGS=$HOST_CFLAGS" -O2 -s -static" &&
 export CC CFLAGS &&
 run $TMP_SRCDIR/configure $CONFIGURE_FLAGS
 fail_panic "Failed to configure the make-$GNUMAKE_VERSION build!"
