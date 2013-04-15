@@ -731,7 +731,9 @@ prepare_canadian_toolchain ()
         fi
         CROSS_GCC=$MINGW_GCC
     elif [ "$ARMSTATIC" = "yes" ]; then
-       : # TODO
+        BINPREFIX=arm-linux-gnueabi-
+        find_program ARMEABI_GCC $BINPREFIX"gcc"
+	CROSS_GCC=$ARMEABI_GCC
     else
         if [ -z "$DARWIN_TOOLCHAIN" ]; then
             echo "Please set DARWIN_TOOLCHAIN to darwin cross-toolchain"
