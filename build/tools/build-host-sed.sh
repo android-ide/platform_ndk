@@ -59,7 +59,7 @@ log "Configuring the build"
 mkdir -p $BUILD_DIR && rm -rf $BUILD_DIR/*
 prepare_canadian_toolchain $BUILD_DIR
 cd $BUILD_DIR &&
-CFLAGS=$HOST_CFLAGS" -O2 -s" &&
+CFLAGS=$HOST_CFLAGS" -O2 -s --static" &&
 export CC CFLAGS &&
 run $SED_SRCDIR/configure \
     --disable-nls \
