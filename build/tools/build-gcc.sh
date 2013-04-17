@@ -251,7 +251,12 @@ fi
 # -Wno-error is needed because our gdb-6.6 sources use -Werror by default
 # and fail to build with recent GCC versions.
 CFLAGS_FOR_BUILD="-O2 -s -Wno-error"
-LDFLAGS_FOR_BUILD=
+
+if [ "$ARMSTATIC" = "yes" ] ; then
+    LDFLAGS_FOR_BUILD="-static"
+else
+    LDFLAGS_FOR_BUILD=
+fi
 
 CFLAGS="$CFLAGS_FOR_BUILD $HOST_CFLAGS"
 LDFLAGS="$LDFLAGS_FOR_BUILD $HOST_LDFLAGS"
