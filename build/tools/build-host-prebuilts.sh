@@ -276,7 +276,7 @@ for SYSTEM in $SYSTEMS; do
     fail_panic "sed build failure!"
 
     # ToDo: perl in windows
-    if [ "$SYSTEM" != "windows" ]; then
+    if [ "$SYSTEM" != "windows" -a "$SYSTEM" != "armstatic" ]; then
         echo "Building $SYSNAME ndk-perl"
         run $BUILDTOOLS/build-host-perl.sh $TOOLCHAIN_FLAGS "$SRC_DIR"
         fail_panic "perl build failure!"
