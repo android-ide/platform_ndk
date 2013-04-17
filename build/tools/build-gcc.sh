@@ -240,7 +240,12 @@ export CC CXX
 export CFLAGS_FOR_TARGET="$ABI_CFLAGS_FOR_TARGET"
 export CXXFLAGS_FOR_TARGET="$ABI_CXXFLAGS_FOR_TARGET"
 # Needed to build a 32-bit gmp on 64-bit systems
-export ABI=$HOST_GMP_ABI
+
+# disable export of ABI on armstatic because arm build does not support ABI
+# values except for "standard"
+if [ "$ARMSTATIC" != "yes" ] ; then
+    export ABI=$HOST_GMP_ABI
+fi
 
 # Note that the following flags only apply for "build" in canadian
 # -Wno-error is needed because our gdb-6.6 sources use -Werror by default
@@ -333,7 +338,13 @@ ABI="$OLD_ABI"
 dump "Building : $TOOLCHAIN toolchain [this can take a long time]."
 cd $BUILD_OUT
 export CC CXX
-export ABI=$HOST_GMP_ABI
+
+# disable export of ABI on armstatic because arm build does not support ABI
+# values except for "standard"
+if [ "$ARMSTATIC" != "yes" ] ; then
+    export ABI=$HOST_GMP_ABI
+fi
+
 JOBS=$NUM_JOBS
 
 while [ -n "1" ]; do
