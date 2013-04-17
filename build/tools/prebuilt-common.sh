@@ -784,6 +784,14 @@ EOF
     fi
     $NDK_BUILDTOOLS_PATH/gen-toolchain-wrapper.sh --src-prefix=$BINPREFIX --dst-prefix="$DST_PREFIX" "$CROSS_WRAP_DIR" \
         --cflags="$HOST_CFLAGS" --cxxflags="$HOST_CFLAGS" --ldflags="HOST_LDFLAGS"
+
+    # some parts of gcc build require arm-unknown-linux-gnueabi-gcc, ...
+    # instead of arm-linux-gnueabi-gcc, ...
+    if [ "$ARMSTATIC" = "yes" ] ; then
+        $NDK_BUILDTOOLS_PATH/gen-toolchain-wrapper.sh --src-prefix=arm-unknown-linux-gnueabi- --dst-prefix="$DST_PREFIX" "$CROSS_WRAP_DIR" \
+        --cflags="$HOST_CFLAGS" --cxxflags="$HOST_CFLAGS" --ldflags="HOST_LDFLAGS"
+    fi
+
     # generate wrappers for BUILD toolchain
     # this is required for mingw/darwin build to avoid tools canadian cross configuration issues
     # 32-bit BUILD toolchain
