@@ -341,7 +341,7 @@ while [ -n "1" ]; do
     if [ $? = 0 ] ; then
         break
     else
-        if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" ] ; then
+        if [ \( "$MINGW" = "yes" -o "$DARWIN" = "yes" \) -o "$ARMSTATIC" = "yes" ] ; then
             # Unfortunately, there is a bug in the GCC build scripts that prevent
             # parallel mingw/darwin canadian cross builds to work properly on some
             # multi-core machines (but not all, sounds like a race condition). Detect
