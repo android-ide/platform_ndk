@@ -350,6 +350,12 @@ if [ "$ARMSTATIC" != "yes" ] ; then
     export ABI=$HOST_GMP_ABI
 fi
 
+# Tell make that all executables are built statically. Necessary because
+# of some hardcoded -Bdynamic options in the Makefile.
+if [ "$ARMSTATIC" = "yes" ] ; then
+    export BUILD_ONLY_STATIC_EXECUTABLES=yes
+fi
+
 JOBS=$NUM_JOBS
 
 while [ -n "1" ]; do
