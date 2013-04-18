@@ -290,7 +290,12 @@ for SYSTEM in $SYSTEMS; do
 
     # Then the toolchains
     for ARCH in $ARCHS; do
-        TOOLCHAIN_NAMES=$(get_toolchain_name_list_for_arch $ARCH)
+        if [ "$SYSTEM" = "armstatic" ]; then
+            # Only GCC 4.6 is supported for armstatic architecture for now
+            TOOLCHAIN_NAMES=$(get_toolchain_name_for_arch $ARCH "4.6")
+        else
+            TOOLCHAIN_NAMES=$(get_toolchain_name_list_for_arch $ARCH)
+        fi
         if [ -z "$TOOLCHAIN_NAMES" ]; then
             echo "ERROR: Invalid architecture name: $ARCH"
             exit 1
