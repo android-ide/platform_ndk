@@ -72,7 +72,7 @@ prepare_canadian_toolchain $BUILD_DIR
 log "Building $HOST_TAG awk"
 export HOST_CC="$CC" &&
 export CFLAGS=$HOST_CFLAGS" -O2 -s" &&
-export LDFLAGS=$HOST_LDFLAGS" --static" &&
+export LDFLAGS=$HOST_LDFLAGS &&
 export NATIVE_CC="gcc" &&
 export NATIVE_CFLAGS=" -O2 -s -I$BUILD_DIR -I." &&
 export NATIVE_LDFLAGS= &&

@@ -92,7 +92,7 @@ log "Configuring the build"
 mkdir -p $BUILD_DIR && rm -rf $BUILD_DIR/*
 prepare_canadian_toolchain $BUILD_DIR
 cd $BUILD_DIR &&
-CFLAGS=$HOST_CFLAGS" -O2 -s -static" &&
+CFLAGS=$HOST_CFLAGS" -O2 -s" &&
 export CC CFLAGS &&
 run $TMP_SRCDIR/configure $CONFIGURE_FLAGS
 fail_panic "Failed to configure the make-$GNUMAKE_VERSION build!"
