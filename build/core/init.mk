@@ -234,6 +234,10 @@ ifndef HOST_ARCH
         ifneq (,$(findstring Power,$(UNAME)))
             HOST_ARCH := ppc
         endif
+        ifneq (,$(findstring arm,$(UNAME)))
+            HOST_ARCH := arm
+            SHELL := /system/bin/sh
+        endif
         ifeq ($(HOST_ARCH),)
             $(call __ndk_info,Unsupported host architecture: $(UNAME))
             $(call __ndk_error,Aborting)
