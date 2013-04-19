@@ -653,6 +653,7 @@ handle_canadian_build ()
         elif [ "$ARMSTATIC" = "yes" ] ; then
             ABI_CONFIGURE_HOST=arm-linux-gnueabi
             HOST_OS=linux
+            HOST_TAG=linux-arm
         else
             if [ "$TRY64" = "yes" ]; then
                 ABI_CONFIGURE_HOST=x86_64-apple-darwin
@@ -1123,6 +1124,9 @@ get_prebuilt_host_tag ()
     fi
     if [ "$DARWIN" = "yes" ]; then
         RET=darwin-x86_64  # let the following handles 32-bit case
+    fi
+    if [ "$ARMSTATIC" = "yes" ]; then
+        RET=linux-arm
     fi
     case $RET in
         linux-x86_64)
