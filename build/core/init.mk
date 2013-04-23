@@ -71,6 +71,11 @@ ifneq ($(words $(NDK_ROOT)),1)
     $(error,Please fix the problem by reinstalling to a different location.)
 endif
 
+# Set SHELL on Android
+ifdef ANDROID_SHELL
+    SHELL := $(ANDROID_SHELL)
+endif
+
 # ====================================================================
 #
 # Define a few useful variables and functions.
@@ -236,7 +241,6 @@ ifndef HOST_ARCH
         endif
         ifneq (,$(findstring arm,$(UNAME)))
             HOST_ARCH := arm
-            SHELL := /system/bin/sh
         endif
         ifeq ($(HOST_ARCH),)
             $(call __ndk_info,Unsupported host architecture: $(UNAME))
