@@ -71,9 +71,9 @@ ifneq ($(words $(NDK_ROOT)),1)
     $(error,Please fix the problem by reinstalling to a different location.)
 endif
 
-# Set SHELL on Android
-ifdef ANDROID_SHELL
-    SHELL := $(ANDROID_SHELL)
+# Custom SHELL
+ifdef NDK_CUSTOM_SHELL
+    SHELL := $(NDK_CUSTOM_SHELL)
 endif
 
 # ====================================================================
