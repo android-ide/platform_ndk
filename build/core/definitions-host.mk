@@ -102,11 +102,7 @@ endif
 ifeq ($(HOST_OS),windows)
 host-install = copy /b/y $(subst /,\,"$1" "$2") > NUL
 else
-ifneq ($(NDK_CUSTOM_INSTALL),)
-host-install = $(NDK_CUSTOM_INSTALL) $1 $2
-else
 host-install = install -p $1 $2
-endif
 endif
 
 # -----------------------------------------------------------------------------

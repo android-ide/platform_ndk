@@ -71,11 +71,6 @@ ifneq ($(words $(NDK_ROOT)),1)
     $(error,Please fix the problem by reinstalling to a different location.)
 endif
 
-# Custom SHELL
-ifdef NDK_CUSTOM_SHELL
-    SHELL := $(NDK_CUSTOM_SHELL)
-endif
-
 # ====================================================================
 #
 # Define a few useful variables and functions.
@@ -238,9 +233,6 @@ ifndef HOST_ARCH
         # We should probably should not care at all
         ifneq (,$(findstring Power,$(UNAME)))
             HOST_ARCH := ppc
-        endif
-        ifneq (,$(findstring arm,$(UNAME)))
-            HOST_ARCH := arm
         endif
         ifeq ($(HOST_ARCH),)
             $(call __ndk_info,Unsupported host architecture: $(UNAME))
