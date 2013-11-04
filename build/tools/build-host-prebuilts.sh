@@ -220,8 +220,12 @@ for SYSTEM in $SYSTEMS; do
                 TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --darwin"
                 CANADIAN_BUILD=yes
                 ;;
-            armstatic)
-                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --armstatic"
+            androidarmstatic)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --target-android-arm --link-static"
+                CANADIAN_BUILD=yes
+                ;;
+            androidx86static)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --link-static"
                 CANADIAN_BUILD=yes
                 ;;
         esac
@@ -276,7 +280,7 @@ for SYSTEM in $SYSTEMS; do
     fail_panic "sed build failure!"
 
     # ToDo: perl in windows
-    if [ "$SYSTEM" != "windows" -a "$SYSTEM" != "armstatic" ]; then
+    if [ "$SYSTEM" != "windows" -a "$SYSTEM" != "androidarmstatic" -a "$SYSTEM" != "androidx86static" ]; then
         echo "Building $SYSNAME ndk-perl"
         run $BUILDTOOLS/build-host-perl.sh $TOOLCHAIN_FLAGS "$SRC_DIR"
         fail_panic "perl build failure!"
@@ -290,7 +294,7 @@ for SYSTEM in $SYSTEMS; do
 
     # Then the toolchains
     for ARCH in $ARCHS; do
-        if [ "$SYSTEM" = "armstatic" ]; then
+        if [ "$SYSTEM" = "androidarmstatic" -o "$SYSTEM" = "androidx86static" ]; then
             # Only GCC 4.6 is supported for armstatic architecture for now
             TOOLCHAIN_NAMES=$(get_toolchain_name_for_arch $ARCH "4.6")
         else
@@ -309,7 +313,7 @@ for SYSTEM in $SYSTEMS; do
     done
 
     # Don't build clang, ... for armstatic 
-    if [ "$SYSTEM" != "armstatic" ] ; then
+    if [ "$SYSTEM" != "androidarmstatic" -o "$SYSTEM" != "androidx86static" ] ; then
 
         # Build llvm and clang
         POLLY_FLAGS=

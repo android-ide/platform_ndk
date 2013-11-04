@@ -243,7 +243,7 @@ export CXXFLAGS_FOR_TARGET="$ABI_CXXFLAGS_FOR_TARGET"
 
 # disable export of ABI on armstatic because arm build does not support ABI
 # values except for "standard"
-if [ "$ARMSTATIC" != "yes" ] ; then
+if [ "$TARGET_ANDROID_ARM" != "yes" ] ; then
     export ABI=$HOST_GMP_ABI
 fi
 
@@ -252,7 +252,7 @@ fi
 # and fail to build with recent GCC versions.
 CFLAGS_FOR_BUILD="-O2 -s -Wno-error"
 
-if [ "$ARMSTATIC" = "yes" ] ; then
+if [ "$LINK_STATIC" = "yes" ] ; then
     LDFLAGS_FOR_BUILD="-static"
 else
     LDFLAGS_FOR_BUILD=
@@ -346,13 +346,13 @@ export CC CXX
 
 # disable export of ABI on armstatic because arm build does not support ABI
 # values except for "standard"
-if [ "$ARMSTATIC" != "yes" ] ; then
+if [ "$TARGET_ANDROID_ARM" != "yes" ] ; then
     export ABI=$HOST_GMP_ABI
 fi
 
 # Tell make that all executables are built statically. Necessary because
 # of some hardcoded -Bdynamic options in the Makefile.
-if [ "$ARMSTATIC" = "yes" ] ; then
+if [ "$LINK_STATIC" = "yes" ] ; then
     export BUILD_ONLY_STATIC_EXECUTABLES=yes
 fi
 
@@ -363,7 +363,7 @@ while [ -n "1" ]; do
     if [ $? = 0 ] ; then
         break
     else
-        if [ \( "$MINGW" = "yes" -o "$DARWIN" = "yes" \) -o "$ARMSTATIC" = "yes" ] ; then
+        if [ \( "$MINGW" = "yes" -o "$DARWIN" = "yes" \) -o "$TARGET_ANDROID_ARM" = "yes" ] ; then
             # Unfortunately, there is a bug in the GCC build scripts that prevent
             # parallel mingw/darwin canadian cross builds to work properly on some
             # multi-core machines (but not all, sounds like a race condition). Detect
