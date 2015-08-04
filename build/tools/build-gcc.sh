@@ -84,11 +84,19 @@ register_var_option "--package-dir=<path>" PACKAGE_DIR "Create archive tarball i
 ENABLE_LANGUAGES="c,c++"
 register_var_option "--enable-languages=<name>" ENABLE_LANGUAGES "Experimental: specify which languages to build"
 
+DISABLE_GDB_BUILD=
+register_var_option "--no-gdb" DISABLE_GDB_BUILD "Disable GDB build"
+
 register_jobs_option
 register_canadian_option
 register_try64_option
 
 extract_parameters "$@"
+
+if [ ! -z "$DISABLE_GDB_BUILD" ] ; then
+    echo "Disabling GDB build"
+    export DISABLE_GDB_BUILD=yes
+fi
 
 prepare_canadian_toolchain $TMPDIR/build
 
