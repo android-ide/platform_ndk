@@ -81,6 +81,9 @@ register_var_option "--gcc-version-list=<vers>" GCC_VERSION_LIST "List of GCC re
 LLVM_VERSION_LIST=$DEFAULT_LLVM_VERSION_LIST
 register_var_option "--llvm-version-list=<versions>" LLVM_VERSION_LIST "List of LLVM release versions"
 
+REDUCED_SET=no
+register_var_option "--reduced" REDUCED_SET "Package only a reduced set of files."
+
 register_try64_option
 
 PROGRAM_PARAMETERS=
@@ -479,17 +482,25 @@ for SYSTEM in $SYSTEMS; do
         if [ "$SYSTEM" = "windows" ]; then
             LONG_SYSTEM=$SYSTEM
         fi
-        unpack_prebuilt ndk-stack-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64" "yes"
-        unpack_prebuilt ndk-depends-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64" "yes"
+
+        if [ "$REDUCED_SET" = "yes" ] ; then
+            LONG_SYSTEM=$SYSTEM
+        else
+            unpack_prebuilt ndk-stack-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64" "yes"
+            unpack_prebuilt ndk-depends-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64" "yes"
+        fi
         unpack_prebuilt ndk-make-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64"
         unpack_prebuilt ndk-awk-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64"
-        if [ "$SYSTEM" != "windows" ]; then
+        if [ "$SYSTEM" != "windows" -a "$REDUCED_SET" != "yes" ]; then
             unpack_prebuilt ndk-perl-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64"
         else
             echo "WARNING: no ndk-perl-$LONG_SYSTEM! http://b/22413538"
         fi
-        unpack_prebuilt ndk-python-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64"
-        unpack_prebuilt ndk-yasm-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64"
+
+        if [ "$REDUCED_SET" != "yes" ]; then
+            unpack_prebuilt ndk-python-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64"
+            unpack_prebuilt ndk-yasm-$LONG_SYSTEM "$DSTDIR" "$DSTDIR64"
+        fi
 
         if [ "$SYSTEM" = "windows" ]; then
             unpack_prebuilt toolbox-$SYSTEM "$DSTDIR" "$DSTDIR64"
