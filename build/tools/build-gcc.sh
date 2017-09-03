@@ -414,21 +414,23 @@ case "$TOOLCHAIN" in
     ;;
 esac
 
-# Build GNU sed so the configure script works for MIPS/MIPS64 on Darwin.
-# http://b/22099482
-cd $BUILD_OUT && run $SRC_DIR/sed/configure
-if [ $? != 0 ] ; then
-    dump "Error while trying to configure sed. See $TMPLOG"
-    exit 1
-fi
-run make -j$NUM_JOBS
-if [ $? != 0 ] ; then
-    dump "Error while trying to build sed. See $TMPLOG"
-    exit 1
-fi
+if [ "$TARGET_ANDROID_ARM" != "yes" -a "$TARGET_ANDROID_X86" != "yes"] ; then
+    # Build GNU sed so the configure script works for MIPS/MIPS64 on Darwin.
+    # http://b/22099482
+    cd $BUILD_OUT && run $SRC_DIR/sed/configure
+    if [ $? != 0 ] ; then
+	dump "Error while trying to configure sed. See $TMPLOG"
+	exit 1
+    fi
+    run make -j$NUM_JOBS
+    if [ $? != 0 ] ; then
+	dump "Error while trying to build sed. See $TMPLOG"
+	exit 1
+    fi
 
-# Put our freshly-built GNU sed ahead of the system one on the path.
-export PATH=$BUILD_OUT/sed/:$PATH
+    # Put our freshly-built GNU sed ahead of the system one on the path.
+    export PATH=$BUILD_OUT/sed/:$PATH
+fi
 
 cd $BUILD_OUT && run \
 $BUILD_SRCDIR/configure --target=$ABI_CONFIGURE_TARGET \
