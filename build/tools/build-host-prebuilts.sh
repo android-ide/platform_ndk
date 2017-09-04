@@ -220,12 +220,12 @@ for SYSTEM in $SYSTEMS; do
                 TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --darwin"
                 CANADIAN_BUILD=yes
                 ;;
-            androidarmstatic)
-                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --target-android-arm --link-static"
+            android-arm)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --target-android-arm"
                 CANADIAN_BUILD=yes
                 ;;
-            androidx86static)
-                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --link-static"
+            android-x86)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS"--target-android-x86"
                 CANADIAN_BUILD=yes
                 ;;
         esac
@@ -258,7 +258,7 @@ for SYSTEM in $SYSTEMS; do
         esac
     fi
 
-    if [ "$SYSTEM" != "androidarmstatic" -a "$SYSTEM" != "androidx86static" ]; then
+    if [ "$SYSTEM" != "android-arm" -a "$SYSTEM" != "android-x86" ]; then
         # First, ndk-stack
         echo "Building $SYSNAME ndk-stack"
         run $BUILDTOOLS/build-ndk-stack.sh $TOOLCHAIN_FLAGS --src-dir=$SRC_DIR
@@ -300,13 +300,13 @@ for SYSTEM in $SYSTEMS; do
     fi
 
     
-    if [ "$SYSTEM" != "androidarmstatic" -a "$SYSTEM" != "androidx86static" ]; then
+    if [ "$SYSTEM" != "android-arm" -a "$SYSTEM" != "android-x86" ]; then
         echo "Building $SYSNAME ndk-python"
         run $BUILDTOOLS/build-host-python.sh $TOOLCHAIN_FLAGS "--toolchain-src-dir=$SRC_DIR" "--systems=$SYSTEM" "--force"
         fail_panic "python build failure!"
     fi
 
-    if [ "$SYSTEM" != "androidarmstatic" ]; then
+    if [ "$SYSTEM" != "android-arm" ]; then
         echo "Building $SYSNAME ndk-yasm"
         run $BUILDTOOLS/build-host-yasm.sh "$SRC_DIR" "$NDK_DIR" $TOOLCHAIN_FLAGS
         fail_panic "yasm build failure!"
@@ -333,7 +333,7 @@ for SYSTEM in $SYSTEMS; do
 
         for TOOLCHAIN_NAME in $TOOLCHAIN_NAMES; do
             echo "Building $SYSNAME toolchain for $ARCH architecture: $TOOLCHAIN_NAME"
-            if [ "$SYSTEM" != "androidarmstatic" -a "$SYSTEM" != "androidx86static" ]; then
+            if [ "$SYSTEM" != "android-arm" -a "$SYSTEM" != "android-x86" ]; then
                 run $BUILDTOOLS/build-gcc.sh "$SRC_DIR" "$NDK_DIR" $TOOLCHAIN_NAME $TOOLCHAIN_FLAGS --with-python=prebuilt -j$BUILD_NUM_CPUS
                 fail_panic "Could not build $TOOLCHAIN_NAME-$SYSNAME!"
             else
@@ -349,7 +349,7 @@ for SYSTEM in $SYSTEMS; do
         PACKAGE_ARG="--package-dir $PACKAGE_DIR"
     fi
 
-    if [ "$SYSTEM" != "androidarmstatic" -a "$SYSTEM" != "androidx86static" ]; then
+    if [ "$SYSTEM" != "android-arm" -a "$SYSTEM" != "android-x86" ]; then
         # Trim the trailing -x86(_64)?. That is: darwin, linux, or windows.
         # Windows is (currently) always 32-bit, and the other two are always 64-bit.
         LLVM_HOST=${SYSTEM%%_64}

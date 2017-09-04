@@ -394,6 +394,7 @@ register_canadian_option ()
         register_option "--mingw" do_mingw_option "Generate windows binaries on Linux."
         register_option "--darwin" do_darwin_option "Generate darwin binaries on Linux."
         register_option "--target-android-arm" do_targetandroidarm_option "Generate ARM binaries on Linux."
+        register_option "--target-android-x86" do_targetandroidarm_option "Generate X86 binaries on Linux."
         register_option "--link-static" do_linkstatic_option "Generate static binaries on Linux."
     fi
 }
@@ -703,12 +704,12 @@ probe_darwin_sdk ()
 handle_canadian_build ()
 {
     HOST_EXE=
-    if [ \( "$MINGW" = "yes" -o "$DARWIN" = "yes" \) -o "$TARGET_ANDROID_ARM" = "yes" ] ; then
+    if [ \( "$MINGW" = "yes" -o "$DARWIN" = "yes" \) -o "$TARGET_ANDROID_ARM" = "yes" -o "$TARGET_ANDROID_X86" = "yes" ] ; then
         case $HOST_TAG in
             linux-*)
                 ;;
             *)
-                echo "ERROR: Can only enable --mingw or --darwin or --target-android-arm on Linux platforms !"
+                echo "ERROR: Can only enable --mingw or --darwin or --target-android-* on Linux platforms !"
                 exit 1
                 ;;
         esac
@@ -725,9 +726,13 @@ handle_canadian_build ()
             HOST_OS=windows
             HOST_EXE=.exe
         elif [ "$TARGET_ANDROID_ARM" = "yes" ] ; then
-            ABI_CONFIGURE_HOST=arm-linux-gnueabi
+            ABI_CONFIGURE_HOST=arm-linux-androideabi
             HOST_OS=linux
             HOST_TAG=linux-arm
+        elif [ "$TARGET_ANDROID_X86" = "yes" ] ; then
+            ABI_CONFIGURE_HOST=i686-linux-android
+            HOST_OS=linux
+            HOST_TAG=linux-x86
         else
             if [ "$TRY64" = "yes" ]; then
                 ABI_CONFIGURE_HOST=x86_64-apple-darwin

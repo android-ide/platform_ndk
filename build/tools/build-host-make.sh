@@ -84,8 +84,8 @@ if [ "$DARWIN" = "yes" ]; then
     CONFIGURE_FLAGS=$CONFIGURE_FLAGS" --host=$ABI_CONFIGURE_HOST"
 fi
 
-if [ "$TARGET_ANDROID_ARM" = "yes" ]; then
-    # Required for a proper armstatic cross compile
+if [ "$TARGET_ANDROID_ARM" = "yes" -o "$TARGET_ANDROID_X86" = "yes" ]; then
+    # Required for a proper Android ARM cross compile
     CONFIGURE_FLAGS=$CONFIGURE_FLAGS" --host=$ABI_CONFIGURE_HOST"
 fi
 
