@@ -220,6 +220,14 @@ for SYSTEM in $SYSTEMS; do
                 TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --darwin"
                 CANADIAN_BUILD=yes
                 ;;
+            android-arm)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS" --target-android-arm"
+                CANADIAN_BUILD=yes
+                ;;
+            android-x86)
+                TOOLCHAIN_FLAGS=$TOOLCHAIN_FLAGS"--target-android-x86"
+                CANADIAN_BUILD=yes
+                ;;
         esac
     fi
 
@@ -250,14 +258,16 @@ for SYSTEM in $SYSTEMS; do
         esac
     fi
 
-    # First, ndk-stack
-    echo "Building $SYSNAME ndk-stack"
-    run $BUILDTOOLS/build-ndk-stack.sh $TOOLCHAIN_FLAGS --src-dir=$SRC_DIR
-    fail_panic "ndk-stack build failure!"
+    if [ "$SYSTEM" != "android-arm" -a "$SYSTEM" != "android-x86" ]; then
+        # First, ndk-stack
+        echo "Building $SYSNAME ndk-stack"
+        run $BUILDTOOLS/build-ndk-stack.sh $TOOLCHAIN_FLAGS --src-dir=$SRC_DIR
+        fail_panic "ndk-stack build failure!"
 
-    echo "Building $SYSNAME ndk-depends"
-    run $BUILDTOOLS/build-ndk-stack.sh $TOOLCHAIN_FLAGS --src-dir=$SRC_DIR --program-name=ndk-depends
-    fail_panic "ndk-depends build failure!"
+        echo "Building $SYSNAME ndk-depends"
+        run $BUILDTOOLS/build-ndk-stack.sh $TOOLCHAIN_FLAGS --src-dir=$SRC_DIR --program-name=ndk-depends
+        fail_panic "ndk-depends build failure!"
+    fi
 
     echo "Building $SYSNAME ndk-make"
     run $BUILDTOOLS/build-host-make.sh $TOOLCHAIN_FLAGS
@@ -289,13 +299,18 @@ for SYSTEM in $SYSTEMS; do
         fail_panic "perl build failure!"
     fi
 
-    echo "Building $SYSNAME ndk-python"
-    run $BUILDTOOLS/build-host-python.sh $TOOLCHAIN_FLAGS "--toolchain-src-dir=$SRC_DIR" "--systems=$SYSTEM" "--force"
-    fail_panic "python build failure!"
+    
+    if [ "$SYSTEM" != "android-arm" -a "$SYSTEM" != "android-x86" ]; then
+        echo "Building $SYSNAME ndk-python"
+        run $BUILDTOOLS/build-host-python.sh $TOOLCHAIN_FLAGS "--toolchain-src-dir=$SRC_DIR" "--systems=$SYSTEM" "--force"
+        fail_panic "python build failure!"
+    fi
 
-    echo "Building $SYSNAME ndk-yasm"
-    run $BUILDTOOLS/build-host-yasm.sh "$SRC_DIR" "$NDK_DIR" $TOOLCHAIN_FLAGS
-    fail_panic "yasm build failure!"
+    if [ "$SYSTEM" != "android-arm" ]; then
+        echo "Building $SYSNAME ndk-yasm"
+        run $BUILDTOOLS/build-host-yasm.sh "$SRC_DIR" "$NDK_DIR" $TOOLCHAIN_FLAGS
+        fail_panic "yasm build failure!"
+    fi
 
     if [ "$SYSTEM" = "windows" ]; then
         echo "Building $SYSNAME toolbox"
@@ -318,8 +333,13 @@ for SYSTEM in $SYSTEMS; do
 
         for TOOLCHAIN_NAME in $TOOLCHAIN_NAMES; do
             echo "Building $SYSNAME toolchain for $ARCH architecture: $TOOLCHAIN_NAME"
-            run $BUILDTOOLS/build-gcc.sh "$SRC_DIR" "$NDK_DIR" $TOOLCHAIN_NAME $TOOLCHAIN_FLAGS --with-python=prebuilt -j$BUILD_NUM_CPUS
-            fail_panic "Could not build $TOOLCHAIN_NAME-$SYSNAME!"
+            if [ "$SYSTEM" != "android-arm" -a "$SYSTEM" != "android-x86" ]; then
+                run $BUILDTOOLS/build-gcc.sh "$SRC_DIR" "$NDK_DIR" $TOOLCHAIN_NAME $TOOLCHAIN_FLAGS --with-python=prebuilt -j$BUILD_NUM_CPUS
+                fail_panic "Could not build $TOOLCHAIN_NAME-$SYSNAME!"
+            else
+                run $BUILDTOOLS/build-gcc.sh "$SRC_DIR" "$NDK_DIR" $TOOLCHAIN_NAME $TOOLCHAIN_FLAGS -j$BUILD_NUM_CPUS --no-gdb
+                fail_panic "Could not build $TOOLCHAIN_NAME-$SYSNAME!"
+            fi
         done
     done
 
@@ -329,12 +349,14 @@ for SYSTEM in $SYSTEMS; do
         PACKAGE_ARG="--package-dir $PACKAGE_DIR"
     fi
 
-    # Trim the trailing -x86(_64)?. That is: darwin, linux, or windows.
-    # Windows is (currently) always 32-bit, and the other two are always 64-bit.
-    LLVM_HOST=${SYSTEM%%_64}
-    LLVM_HOST=${SYSTEM%%-x86}
-    run $BUILDTOOLS/build-llvm.py --host $LLVM_HOST $PACKAGE_ARG
-    fail_panic "Could not build llvm for $SYSNAME"
+    if [ "$SYSTEM" != "android-arm" -a "$SYSTEM" != "android-x86" ]; then
+        # Trim the trailing -x86(_64)?. That is: darwin, linux, or windows.
+        # Windows is (currently) always 32-bit, and the other two are always 64-bit.
+        LLVM_HOST=${SYSTEM%%_64}
+        LLVM_HOST=${SYSTEM%%-x86}
+        run $BUILDTOOLS/build-llvm.py --host $LLVM_HOST $PACKAGE_ARG
+        fail_panic "Could not build llvm for $SYSNAME"
+    fi
 
     # We're done for this system.
 done

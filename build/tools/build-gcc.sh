@@ -84,11 +84,19 @@ register_var_option "--package-dir=<path>" PACKAGE_DIR "Create archive tarball i
 ENABLE_LANGUAGES="c,c++"
 register_var_option "--enable-languages=<name>" ENABLE_LANGUAGES "Experimental: specify which languages to build"
 
+DISABLE_GDB_BUILD=
+register_var_option "--no-gdb" DISABLE_GDB_BUILD "Disable GDB build"
+
 register_jobs_option
 register_canadian_option
 register_try64_option
 
 extract_parameters "$@"
+
+if [ ! -z "$DISABLE_GDB_BUILD" ] ; then
+    echo "Disabling GDB build"
+    export DISABLE_GDB_BUILD=yes
+fi
 
 prepare_canadian_toolchain $TMPDIR/build
 
@@ -270,13 +278,23 @@ export CC CXX
 export CFLAGS_FOR_TARGET="$ABI_CFLAGS_FOR_TARGET"
 export CXXFLAGS_FOR_TARGET="$ABI_CXXFLAGS_FOR_TARGET"
 # Needed to build a 32-bit gmp on 64-bit systems
-export ABI=$HOST_GMP_ABI
+
+# disable export of ABI on armstatic because arm build does not support ABI
+# values except for "standard"
+if [ "$TARGET_ANDROID_ARM" != "yes" ] ; then
+    export ABI=$HOST_GMP_ABI
+fi
 
 # Note that the following flags only apply for "build" in canadian
 # -Wno-error is needed because our gdb-6.6 sources use -Werror by default
 # and fail to build with recent GCC versions.
 CFLAGS_FOR_BUILD="-O2 -s -Wno-error"
-LDFLAGS_FOR_BUILD=
+
+if [ "$LINK_STATIC" = "yes" ] ; then
+    LDFLAGS_FOR_BUILD="-static"
+else
+    LDFLAGS_FOR_BUILD=
+fi
 
 if [ "$MINGW" = "yes" ] ; then
     CFLAGS_FOR_BUILD=$CFLAGS_FOR_BUILD" -D__USE_MINGW_ANSI_STDIO=1"
@@ -381,7 +399,7 @@ case "$TOOLCHAIN" in
 esac
 
 MAY_FAIL_DUE_TO_RACE_CONDITION=
-if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" ]; then
+if [ "$MINGW" = "yes" -o "$DARWIN" = "yes" -o "$TARGET_ANDROID_ARM" = "yes" ]; then
    MAY_FAIL_DUE_TO_RACE_CONDITION=yes
 fi
 
@@ -396,21 +414,23 @@ case "$TOOLCHAIN" in
     ;;
 esac
 
-# Build GNU sed so the configure script works for MIPS/MIPS64 on Darwin.
-# http://b/22099482
-cd $BUILD_OUT && run $SRC_DIR/sed/configure
-if [ $? != 0 ] ; then
-    dump "Error while trying to configure sed. See $TMPLOG"
-    exit 1
-fi
-run make -j$NUM_JOBS
-if [ $? != 0 ] ; then
-    dump "Error while trying to build sed. See $TMPLOG"
-    exit 1
-fi
+if [ "$TARGET_ANDROID_ARM" != "yes" -a "$TARGET_ANDROID_X86" != "yes"] ; then
+    # Build GNU sed so the configure script works for MIPS/MIPS64 on Darwin.
+    # http://b/22099482
+    cd $BUILD_OUT && run $SRC_DIR/sed/configure
+    if [ $? != 0 ] ; then
+	dump "Error while trying to configure sed. See $TMPLOG"
+	exit 1
+    fi
+    run make -j$NUM_JOBS
+    if [ $? != 0 ] ; then
+	dump "Error while trying to build sed. See $TMPLOG"
+	exit 1
+    fi
 
-# Put our freshly-built GNU sed ahead of the system one on the path.
-export PATH=$BUILD_OUT/sed/:$PATH
+    # Put our freshly-built GNU sed ahead of the system one on the path.
+    export PATH=$BUILD_OUT/sed/:$PATH
+fi
 
 cd $BUILD_OUT && run \
 $BUILD_SRCDIR/configure --target=$ABI_CONFIGURE_TARGET \
@@ -442,7 +462,19 @@ ABI="$OLD_ABI"
 dump "Building : $TOOLCHAIN toolchain [this can take a long time]."
 cd $BUILD_OUT
 export CC CXX
-export ABI=$HOST_GMP_ABI
+
+# disable export of ABI on armstatic because arm build does not support ABI
+# values except for "standard"
+if [ "$TARGET_ANDROID_ARM" != "yes" ] ; then
+    export ABI=$HOST_GMP_ABI
+fi
+
+# Tell make that all executables are built statically. Necessary because
+# of some hardcoded -Bdynamic options in the Makefile.
+if [ "$LINK_STATIC" = "yes" ] ; then
+    export BUILD_ONLY_STATIC_EXECUTABLES=yes
+fi
+
 export NUM_JOBS
 
 while [ -n "1" ]; do
